@@ -399,6 +399,10 @@ func resourceVultrInstanceCreate(ctx context.Context, d *schema.ResourceData, me
 		return diag.Errorf("error while waiting for Server %s to be in a active state : %s", d.Id(), err)
 	}
 
+	if _, err = waitForServerAvailable(ctx, d, "ok", []string{"none", "installingbooting"}, "server_status", meta); err != nil {
+		return diag.Errorf("error while waiting for Server %s to have an OK status: %s", d.Id(), err)
+	}
+
 	if backups == "enabled" {
 		backupReq := generateBackupSchedule(backupSchedule)
 		if _, err := client.Instance.SetBackupSchedule(context.Background(), instance.ID, backupReq); err != nil {
